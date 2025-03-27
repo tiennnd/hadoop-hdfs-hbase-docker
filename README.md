@@ -64,6 +64,11 @@ docker volume rm $(docker volume ls -q)
 docker-compose up
 ```
 
+#### Creating the `hbase` network if need
+```bash
+docker network create hbase
+```
+
 #### Validating the status of the Hadoop cluster
 ```bash
 docker ps
