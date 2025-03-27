@@ -22,8 +22,8 @@ volumes:
 # ----------------------------------------------------------------------------------------------------
 networks:
   hbase:
-    external:
-      name: 'hbase'
+    external: true
+      # name: 'hbase'
 
 services:
 
@@ -506,3 +506,109 @@ services:
       HBASE_CONF_hbase_zookeeper_peerport: 2888
       HBASE_CONF_hbase_zookeeper_leaderport: 3888
       HBASE_CONF_hbase_zookeeper_property_clientPort: 2182
+  # ----------------------------------------------------------------------------------------------------
+  # Apache Hive is a data warehousing and SQL-like query tool built on top of the Hadoop
+  # Distributed File System (HDFS). It provides a SQL-like interface for querying and
+  # analyzing large datasets stored in HDFS or other Hadoop-compatible file systems.
+  # Hive translates SQL-like queries into MapReduce jobs, which are executed on the
+  # Hadoop cluster.
+  # ----------------------------------------------------------------------------------------------------
+  hive:
+    image: 'bde2020/hive:2.3.2-postgresql-metastore'
+    container_name: 'hive'
+    hostname: 'hive'
+    environment:
+      SERVICE_PRECONDITION: 'metastore:9083'
+      HIVE_CORE_CONF_javax_jdo_option_ConnectionURL: 'jdbc:postgresql://metastore/metastore'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: 'jdbc:postgresql://hive-metastore-postgresql/metastore'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName: 'org.postgresql.Driver'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName: 'hive'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword: 'hive'
+      HIVE_SITE_CONF_datanucleus_autoCreateSchema: 'false'
+      HIVE_SITE_CONF_hive_metastore_uris: 'thrift://metastore:9083'
+      HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: 'false'
+      CORE_CONF_fs_defaultFS: 'hdfs://namenode:9000'
+      CORE_CONF_hadoop_http_staticuser_user: 'root'
+      CORE_CONF_hadoop_proxyuser_hue_hosts: '*'
+      CORE_CONF_hadoop_proxyuser_hue_groups': '*'
+      HDFS_CONF_dfs_webhdfs_enabled: 'true'
+      HDFS_CONF_dfs_permissions_enabled: 'false'
+      YARN_CONF_yarn_log___aggregation___enable: 'true'
+      YARN_CONF_yarn_resourcemanager_recovery_enabled: 'true'
+      YARN_CONF_yarn_resourcemanager_store_class: 'org.apache.hadoop.yarn.server.resourcemanager.recovery.FileSystemRMStateStore'
+      YARN_CONF_yarn_resourcemanager_fs_state___store_uri: '/rmstate'
+      YARN_CONF_yarn_nodemanager_remote___app___log___dir: '/app-logs'
+      YARN_CONF_yarn_log_server_url: 'http://historyserver:8188/applicationhistory/logs/'
+      YARN_CONF_yarn_timeline___service_enabled: 'true'
+      YARN_CONF_yarn_timeline___service_generic___application___history_enabled: 'true'
+      YARN_CONF_yarn_resourcemanager_system___metrics___publisher_enabled: 'true'
+      YARN_CONF_yarn_resourcemanager_hostname: 'resourcemanager'
+      YARN_CONF_yarn_timeline___service_hostname: 'historyserver'
+      YARN_CONF_yarn_resourcemanager_address: 'resourcemanager:8032'
+      YARN_CONF_yarn_resourcemanager_scheduler_address: 'resourcemanager:8030'
+      YARN_CONF_yarn_resourcemanager_resource__tracker_address: 'resourcemanager:8031o'
+    ports:
+      - '10000:10000'
+      - '10002:10002'
+    networks:
+      - 'hbase'
+
+  # ----------------------------------------------------------------------------------------------------
+  # In the context of Apache Hive, the metastore is a component that stores the metadata about Hive
+  # tables, partitions, and other objects. It serves as a central repository for the schema and
+  # structure of the data stored in Hive.
+  #
+  # When you create a table in Hive, the table definition and other metadata are stored in the
+  # metastore. This metadata includes information about the table's columns, data types, storage
+  # format, and location in HDFS. The metastore also stores information about partitions, which
+  # are used to partition large tables into smaller, more manageable pieces.
+  # 
+  # The metastore is typically implemented using a relational database management system (RDBMS),
+  # such as MySQL or PostgreSQL. Hive uses a JDBC connection to communicate with the metastore
+  # and to store and retrieve metadata. This allows Hive to support a wide range of databases
+  # as the underlying storage for the metastore.#
+  # ----------------------------------------------------------------------------------------------------
+  metastore:
+    image: 'bde2020/hive:2.3.2-postgresql-metastore'
+    container_name: 'metastore'
+    hostname: 'metastore'
+    command: '/opt/hive/bin/hive --service metastore'
+    ports:
+      - "9083:9083"
+    networks:
+      - 'hbase'
+    environment:
+      SERVICE_PRECONDITION: 'namenode:9870 datanode1:9864 datanode2:9864'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionURL: 'jdbc:postgresql://hive-metastore-postgresql/metastore'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionDriverName: 'org.postgresql.Driver'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionUserName: 'hive'
+      HIVE_SITE_CONF_javax_jdo_option_ConnectionPassword: 'hive'
+      HIVE_SITE_CONF_datanucleus_autoCreateSchema: 'false'
+      HIVE_SITE_CONF_hive_metastore_uris: 'thrift://metastore:9083'
+      HDFS_CONF_dfs_namenode_datanode_registration_ip___hostname___check: 'false'
+      CORE_CONF_fs_defaultFS: 'hdfs://namenode:9000'
+      CORE_CONF_hadoop_http_staticuser_user: 'root'
+      CORE_CONF_hadoop_proxyuser_hue_hosts: '*'
+      CORE_CONF_hadoop_proxyuser_hue_groups': '*'
+      HDFS_CONF_dfs_webhdfs_enabled: 'true'
+      HDFS_CONF_dfs_permissions_enabled: 'false'
+      YARN_CONF_yarn_log___aggregation___enable: 'true'
+      YARN_CONF_yarn_resourcemanager_recovery_enabled: 'true'
+      YARN_CONF_yarn_resourcemanager_store_class: 'org.apache.hadoop.yarn.server.resourcemanager.recovery.FileSystemRMStateStore'
+      YARN_CONF_yarn_resourcemanager_fs_state___store_uri: '/rmstate'
+      YARN_CONF_yarn_nodemanager_remote___app___log___dir: '/app-logs'
+      YARN_CONF_yarn_log_server_url: 'http://historyserver:8188/applicationhistory/logs/'
+      YARN_CONF_yarn_timeline___service_enabled: 'true'
+      YARN_CONF_yarn_timeline___service_generic___application___history_enabled: 'true'
+      YARN_CONF_yarn_resourcemanager_system___metrics___publisher_enabled: 'true'
+      YARN_CONF_yarn_resourcemanager_hostname: 'resourcemanager'
+      YARN_CONF_yarn_timeline___service_hostname: 'historyserver'
+      YARN_CONF_yarn_resourcemanager_address: 'resourcemanager:8032'
+      YARN_CONF_yarn_resourcemanager_scheduler_address: 'resourcemanager:8030'
+      YARN_CONF_yarn_resourcemanager_resource__tracker_address: 'resourcemanager:8031o'
+  hive-metastore-postgresql:
+    image: 'bde2020/hive-metastore-postgresql:2.3.0'
+    container_name: 'hive-metastore-postgresql'
+    hostname: 'hive-metastore-postgresql'
+    networks:
+      - 'hbase'
