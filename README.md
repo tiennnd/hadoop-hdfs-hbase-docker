@@ -224,6 +224,15 @@ lorem
 ![status1.png](status1.png)
 ![status2.png](status2.png)
 
+
+#### Prepair Python environment. Using python 3.10
+```bash
+conda create -n hadoop-env python=3.10
+cd /<path/to/dir>/hadoop-hdfs-hbase-docker
+```
+
+
+
 #### Testing HDFS using Python
 
 ```python3
