@@ -64,10 +64,8 @@ docker volume rm $(docker volume ls -q)
 docker-compose up
 ```
 
-#### Creating the `hbase` network if need
-```bash
-docker network create hbase
-```
+** Noted: `docker network create hbase`
+
 
 #### Validating the status of the Hadoop cluster
 ```bash
@@ -228,16 +226,6 @@ lorem
 
 ![status1.png](status1.png)
 ![status2.png](status2.png)
-
-
-#### Prepair Python environment. Using python 3.10
-```bash
-conda create -n hadoop-env python=3.10
-conda activate hadoop-env
-cd /<path/to/dir>/hadoop-hdfs-hbase-docker
-```
-
-
 
 #### Testing HDFS using Python
 
