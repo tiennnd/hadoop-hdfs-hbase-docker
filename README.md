@@ -228,6 +228,7 @@ lorem
 #### Prepair Python environment. Using python 3.10
 ```bash
 conda create -n hadoop-env python=3.10
+conda activate hadoop-env
 cd /<path/to/dir>/hadoop-hdfs-hbase-docker
 ```
 
